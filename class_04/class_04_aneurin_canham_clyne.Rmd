@@ -157,14 +157,14 @@ baltimore%>%
 
 **Task**: Of all the pills sent to Baltimore City between 2006 and 2012, which entity had the highest percentage of all pills sent to it. Group only by the name of the pharmacy for this question. Produce your answer in a codeblock below.
 
-```{r}
-#baltimore%>%
- # group_by(buyer_name)%>%
- # summarise(pills = sum(dosage_unit))%>%
-  #mutate(pills_rank= percent_rank(dosage_unit))%>%
-  #arrange(desc(pills))
+
+baltimore%>%
+  group_by(buyer_name)%>%
+ summarise(pills = sum(dosage_unit))%>%
+  mutate(pills_rank = %>%
+  arrange(desc(pills_rank))
 #I was working on this at the end
-```
+
 
 In a comment inside the codeblock, put the name of the entity, the percentage of pills it was responsible for, the total number of pills sent to it and the total number of pills sent to the whole city. 
 
