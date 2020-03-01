@@ -73,7 +73,10 @@ We're loading three packages today: the Tidyverse, Janitor and a new one, [Lubri
 **Task**: In the code block below, load the Tidyverse family of packages, the Janitor package, and the Lubridate package. If you've never loaded lubridate before, you'll need to install it first. You should be good at installing and loading packages at this point. If you have problems, Google it or look at previous labs. 
 
 ```{r}
-
+#install.packages('lubridate')
+library('tidyverse')
+library('janitor')
+library('lubridate')
 ```
 
 ## Load Data
@@ -94,7 +97,12 @@ mingo <- read_tsv("data/arcos-wv-mingo-54059-itemized.tsv")
 
 ## Examine the Data
 
-**Task**: Use glimpse() and View() to get a sense of the data.     
+**Task**: Use glimpse() and View() to get a sense of the data.
+
+```{r}
+glimpse(mingo)
+view(mingo)
+```
 
 ## Cleaning
 
@@ -171,7 +179,14 @@ mingo %>%
 **Task**: Create a codeblock below and create a table that answers the following question: how many total pills were shipped to Mingo County each year between 2006 and 2012? In a comment, explain what the overall trend was during that period. 
 
 ```{r}
+mingo %>%
+  group_by(transaction_year) %>%
+  summarise(total_pills = sum(dosage_unit))
 
+#the number of pills increased dramatically over 2006-2008, with almost ten million pills shipped, before declining quite sharply over the next 3 years
+  
+  
+  
 ```
 
 ## About Joins
