@@ -63,7 +63,7 @@ Take the following steps to set up your document:
 ```{r}
 library(tidyverse)
 library(janitor)
-install.packages(lubridate)
+install.packages('lubridate')
 library(lubridate)
 ```
 
@@ -86,19 +86,58 @@ Here's the data we'll be using, all in the data folder
 
 **Task**: Create a code block below, and write and execute the function to load in the data.  Store each one as an object that is the same as the file name (without .csv, of course). Write a comment describing what you are doing.  
 
+```{r}
+buyer_addresses <- read_csv("data/buyer_addresses.csv")
+buyer_annual_by_year <- read_csv('data/buyer_annual_by_year.csv')
+buyer_totals <- read_csv('data/buyer_totals.csv')
+state_population_per_year <- read_csv('data/state_population_per_year.csv')
+
+#I'm storing each csv as an object
+
+```
 ## Examine the Data
 
 Now that the data is in, spend some time examining it to get a sense of it using the functions we reviewed previously. These data checks should be routine for you at this point. What information does it contain? What is missing? Are values stored in strange formats?
 
 **Task** Answer the following question in a comment in a code block below.  Look at the data.  The three data sets describe similar things -- buyers -- but have different numbers of records? What's your best guess for why the number of records buyer_annual_by_year is higher than buyer_totals?  What about your best guess for why buyer_addresses is higher than buyer_totals?  
 
+```{r}
+#The buyer by year numbers are higher than the buyer totals because it separates the transactions by year, meaning there are multiple entries for most of the buyers, save those who only bought opioids in one year.
+
+#the buyer addresses might be all the pharmacies with a DEA buyer number, but many of these may not have purchased opioids
+```
 ## Analysis
 
 **Task**: What is the name and location of the pharmacy that had the most pills sent to it in total? Do some web research and offer your best guess, which you could use as a jumping off point for further reporting, as to why this pharmacy might have so many.
 
+```{r}
+VA_find <- left_join(buyer_totals, buyer_addresses, by = "buyer_dea_no") %>%
+arrange(desc(total_pills))
+
+#the VA consolidated mail outpatient pharmacy has like a half a billion pilles sent to it. It's in North Charleston, SC, at 3725 rivers avenue, according to https://www.pbm.va.gov/PBM/CMOP/VA_Mail_Order_Pharmacy.asp the VA operates a mail order pharmacy that ships people pilles, it seems the North Charleston thing is where these prescriptions are consolidated before mailing. 
+```
+
 **Task**: What is the name of the practitioner in Maryland that had the most totals pills **in 2010**? How many total pills did the doctor have, compared to the next highest doctor in the state that year? Use the Maryland state physician board lookup tool to find any disciplinary actions taken against this doctor: https://www.mbp.state.md.us/bpqapp/. Do a brief writeup of what you find.  Also answer this question: how would ensure that the doctor you find on the state board lookup tool is the same doctor described in this data.  
 
+```{r}
+maryland_buyers <- left_join(buyer_annual_by_year, buyer_addresses, by = "buyer_dea_no") %>%
+  group_by(buyer_state.x) %>%
+  filter(buyer_state.x == "MD") %>%
+  filter(buyer_bus_act.x == "PRACTITIONER")%>%
+  filter(year == "2010") %>%
+  arrange(desc(dosage_unit))
+
+#Rakesh Mathur's license was suspended in February 2012 for improper prescibing practices according to the Maryland State Physician Board. https://www.mbp.state.md.us/bpqapp/Profile.aspx#DA he ordered over 1/3 of a million opioid pills in 2012
+```
 **Task**: Which state had the highest rate of total pills per person sent to it over the 2006 to 2012 period?
+
+```{r}
+pills_per_cap <- left_join(buyer_totals, state_population_per_year, by = "buyer_state") %>%
+  group_by(buyer_state) %>%
+  sum('total_pills')%>%
+  arrange(desc(total_pills))
+  
+```
 
 **Task**: Are there any buyers included in the buyer_totals table that ARE NOT included in the buyer_addresses table?  Write code in the codeblock below that will help you figure out the answer to this question. Write comments that explain what you're doing. 
 
