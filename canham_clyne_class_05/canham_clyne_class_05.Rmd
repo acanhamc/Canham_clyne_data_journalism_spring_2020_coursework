@@ -132,10 +132,17 @@ maryland_buyers <- left_join(buyer_annual_by_year, buyer_addresses, by = "buyer_
 **Task**: Which state had the highest rate of total pills per person sent to it over the 2006 to 2012 period?
 
 ```{r}
-pills_per_cap <- left_join(buyer_totals, state_population_per_year, by = "buyer_state") %>%
+
+buyer_totals %>%
   group_by(buyer_state) %>%
-  sum('total_pills')%>%
-  arrange(desc(total_pills))
+  summarise(all_pills = sum(total_pills)) %>%
+ left_join(state_population_per_year, by = "buyer_state") %>%
+  mutate (pills_per_person = all_pills/population_average) %>%
+  arrange(desc(pills_per_person))
+
+#West Virginia with 464.88 pills per person. I've learned to break these down into the most fundamental parts before doing stuff like joins. It's probably best to write this as a statement in formal logic before I write it in R so I know which constituent elements I have
+
+
   
 ```
 
