@@ -463,7 +463,38 @@ ggplot (mingo_pills_per_year) +
 **Task**: In the tutorial above, you followed the steps to create the graphic with the title: 
 "Baltimore County, Baltimore City, Anne Arundel County had high number of opioids relative to population in 2012".  Create the same graphic, but instead of showing Maryland counties, show West Virginia counties. Adjust the title to reflect what the data shows.   You'll need to created a subset of the arcos_county_pills_per_year to do this, as well as pull in WV 2012 population data from the ARCOS api. 
 
+```{r}
+west_virginia_2012 <- arcos_county_pills_per_year %>%
+  filter(buyer_state == "WV", year == "2012") %>%
+  select(buyer_county, year, dosage_unit)
+```
 
+
+```{r}
+wv_pop_2012 <- county_population(key = key) %>%
+  clean_names() %>%
+  filter(buyer_state == "WV", year=="2012") %>%
+  select(buyer_county, population)
+```
+
+```{r}
+wv_percapita_pills_count <- west_virginia_2012 %>%
+  inner_join(wv_pop_2012, by=("buyer_county")) %>%
+  select(buyer_county, dosage_unit, population)
+  
+```
+
+```{r}
+ggplot(wv_percapita_pills_count) +
+  geom_point(aes(population, dosage_unit))  +
+  labs(x="2012 population", y="pills received in 2012", title="Raleig, Cabell and Kanawha counties had higher numbers of opioids relative to population among the state's large counties", caption = "Source: DEA ARCOS databas, via Washington Post", fill="buyer_county") +
+  scale_x_continuous(labels = comma) +
+  scale_y_continuous(labels = comma) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  geom_smooth(aes(population, dosage_unit), method = "lm", se = FALSE) + 
+  geom_text_repel(aes(population, dosage_unit, label=buyer_county),
+                  subset(wv_percapita_pills_count, population > 75000))
+```
 
 ## Submission
 
