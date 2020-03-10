@@ -67,7 +67,7 @@ library(tidyverse)
 library(janitor)
 library(lubridate)
 
-install.packages('scales')
+#install.packages('scales')
 #install.packages('ggrepel')
 #install.packages('arcos')
 
