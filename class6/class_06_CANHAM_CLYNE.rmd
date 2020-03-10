@@ -182,10 +182,10 @@ ggplot(population_dosage) +
   labs( x="2012 population", y="2012 opioid pills", title="a scatterplot of US counties by population and pills received", caption = "Source DEA ARCOS database, via Washington Post", fill="buyer_state") +
   scale_y_continuous(labels = comma) +
   scale_x_continuous(labels = comma) +
-  geom_smooth(aes(population, dosage_unit), method = "lm", se = FALSE) +
-  geom_text_repel(aes(population, dosage_unit, label=buyer_state), 
-                  subset(population_dosage, population > 10,000,000))
-
+  geom_smooth(aes(population, dosage_unit), method = "lm", se = FALSE) 
+  #geom_text_repel(aes(population, dosage_unit, label=buyer_state), 
+                  #subset(population_dosage, population > 10,000,000))
+#I can't get these fellas to work
 ```
 
 ### Q3 through infinity
