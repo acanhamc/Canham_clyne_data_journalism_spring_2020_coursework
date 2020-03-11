@@ -1,0 +1,52 @@
+---
+title: "pit_count_11th_circuit"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r}
+library(tidyverse)
+library(lubridate)
+library(janitor)
+library(dplyr)
+```
+
+```{r}
+all_states <- read.csv('hud_pit.csv')
+
+```
+
+```{r}
+ninth_states <- all_states %>%
+  filter(state_code %in% c ('ak', 'az', 'ca', 'hi', 'id', 'mt', 'nv', 'or', 'wa'))
+```
+
+```{r}
+#the next step is to sort by state code and separate out the 9th circuit states: ak, az, ca, hi, id, mt, nv, or, wa, 
+
+ninth_states <- all_states %>%
+  filter(state_code %in% c ('ak', 'az', 'ca', 'hi', 'id', 'mt', 'nv', 'or', 'wa')) %>%
+  select(state_code, overall_homeless_2018, unsheltered_homeless_2018) %>%
+  group_by(state_code) %>%
+  summarize(unsheltered_homeless_2018 = sum(unsheltered_homeless_2018))
+```
+
+```{r}
+all_states %>%
+  summarize(unsheltered_homeless_2018_total = sum(unsheltered_homeless_2018))
+```
+
+```{r}
+ninth_states %>%
+  summarize(unshelthered_2018_9th_total = sum(unsheltered_homeless_2018))
+```
+
+
+
+
+
