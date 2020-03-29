@@ -80,7 +80,21 @@ We're also going to load two new packages: [mapview](https://r-spatial.github.io
 
 ```{r}
 
-# Load Tidyverse, janitor and arcos, tidycensus, mapview, ggthemes, scales
+# Load Tidyverse, janitor and arcos, tidycensus, mapview, ggthemes, scales 
+#install.packages('arcos')
+#install.packages('tidycensus')
+#install.packages('mapview')
+#install.packages('sf')
+#install.packages('ggthemes')
+#install.packages('scales')
+
+library(tidyverse)
+library(janitor)
+library(arcos)
+library('tidycensus')
+library(mapview)
+library(ggthemes)
+library(scales)
 
 
 ```
@@ -139,7 +153,7 @@ not_in_population <- arcos_county_pills_per_year %>%
 **Task**: Examine the not_in_population table.  Write a few sentences explaining patterns you see in which records show up in the pills table, but not in population table.  How could this cause problems for you in the future?
 
 ```{r}
-# Comment
+# Comment The counties listed in Pills but not in Population all seem to be counties or municipalities in territories, and a couple in Alaska. At the end, there are some unnamed areas with no listed buyer counties in CT, CA and NV, and a couple other spots. Some received over 200,000 pills. Basically, the fear here is that some specific buyers or locales could be overlooked, producing a distorted view of county and state totals, and potentially obscuring the role of specific pharmacies. 
 ```
 
 Okay, let's put them together. Remember we need to join them on both countyfips and year.  We're also going to throw in buyer_county and buyer_state, which exist in both tables, so we don't get the buyer_county.x and buyer_county.y weirdness.
@@ -173,7 +187,8 @@ First, we need to store our API Key. You can use mine for now, but best to [get 
 
 ```{r}
 # Define API Key
-census_api_key("549950d36c22ff16455fe196bbbd01d63cfbe6cf")
+census_api_key <- ("549950d36c22ff16455fe196bbbd01d63cfbe6cf")
+'install = TRUE'
 
 # If you need to look up variables, this is how you do it
 acs_variables <- load_variables(2017, "acs5" )
@@ -230,10 +245,10 @@ Three lines of code is all we need.  First, the dataframe we're doing this to, w
 ```{r}
 state_geodata_shifted %>%
   ggplot(aes(fill = estimate)) +
-  geom_sf()
+  geom_sf() 
 
 # Turn off scientific notation if your legend looks weird
-#options(scipen=999)
+options(scipen=999)
 
 ```
 
@@ -304,7 +319,7 @@ After we've loaded the mapview package, the function we use is called "mapview".
 
 ```{r}
 
-mapview(state_geodata_shifted, zcol = "estimate", legend = TRUE)
+mapview(state_geodata_shifted, zcol = 'estimate', legend = TRUE)
 
 ```
 
@@ -341,7 +356,7 @@ Okay, first, let's build an interactive version of the map.
 **Task**: Using the mapview() function we used above, show an interactive map that shades each state according to the pills per person rate in 2009.
 
 ```{r}
-# interactive map code here
+mapview(geo_pills_population_state_2009, zcol = 'estimate', legend = TRUE)
 ```
 
 Now let's plot a basic version.
@@ -356,7 +371,13 @@ geo_pills_population_state_2009 %>%
 
 ```{r}
 
-# Map code here
+ geo_pills_population_state_2009 %>%
+  ggplot(aes(fill = estimate)) +
+  geom_sf(lwd = 0) +
+  theme_map() +
+  labs(fill='Population',title="California, Texas have largest populations", subtitle = "2017 population, U.S. Census", caption = "Source: U.S. Census ACS") +
+  theme(legend.position="bottom") +
+  scale_fill_viridis_c(option = "magma",labels = comma)
 
 ```
 
@@ -413,7 +434,7 @@ geo_pills_population_state %>%
   facet_wrap(~year, nrow=2) +
   geom_sf(lwd = 0) +
   theme_map() +
-  labs(fill='Pills per Person',title="", subtitle = "", caption = "Source: ARCOS database") +
+  labs(fill='Pills per Person',title="Opioid Doses per Person was hightest in Appalachia between 2006 and 2014", subtitle = "Most regions saw increases in per capita shipments over the years 2006-2014, particularly the south and the west coast", caption = "Source: ARCOS database analysis and Census geographic data") +
   theme(legend.position="bottom") +
   scale_fill_viridis_c(option = "magma",labels = comma)
 
@@ -421,9 +442,38 @@ geo_pills_population_state %>%
 
 **Task**: Make a single INTERACTIVE map that is colored based on the number of pills per person in each county in 2009. Provide a short writeup on what you find.What trends do you see, beyond Appalachia? Note: the map will probably open in a web browser. 
 
-```{r}
 
-# Map Code Here
+```{r}
+pills_population_county_arcos <- arcos_county_population_per_year %>%
+  left_join(arcos_county_pills_per_year, by = c("countyfips", "year", "buyer_county","buyer_state"))
+```
+
+```{r}
+pills_population_county_2009 <- pills_population_county_arcos %>%
+   mutate(statefips = str_sub(countyfips, 1,2)) %>%
+   select(statefips, countyfips, buyer_county, buyer_state,year, population,dosage_unit)
+```
+
+```{r}
+pills_population_county_2009 %>%
+  filter(year==2009) %>%
+  group_by(statefips, countyfips, buyer_state, buyer_county) %>%
+  summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
+            total_population=sum(population, na.rm=TRUE)) %>%
+  mutate(pills_per_person=total_pills/total_population)
+
+
+
+
+```
+
+```{r}
+geo_pills_population_county_2009 <- county_geodata_shifted %>%
+ inner_join(pills_population_county_2009, by=c("GEOID" = "countyfips"))
+```
+
+```{r}
+mapview(geo_pills_population_county_2009, zcol = 'estimate', legend = TRUE)
 
 ```
 
