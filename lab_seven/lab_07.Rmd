@@ -187,8 +187,8 @@ First, we need to store our API Key. You can use mine for now, but best to [get 
 
 ```{r}
 # Define API Key
-census_api_key <- ("549950d36c22ff16455fe196bbbd01d63cfbe6cf")
-'install = TRUE'
+census_api_key = "05682c8a70828581d78d29e91ba8af8f0a83c218"
+
 
 # If you need to look up variables, this is how you do it
 acs_variables <- load_variables(2017, "acs5" )
@@ -203,10 +203,10 @@ First, lets pull in county and state.  The "variable" here is just a count of to
 
 ```{r}
 
-county_geodata <- get_acs(geography = "county",
+county_geodata <- get_acs(geography = "county", key = census_api_key,
               variables = "B01001_001", geometry = TRUE)
 
-state_geodata <- get_acs(geography = "state",
+state_geodata <- get_acs(geography = "state", key = census_api_key,
               variables = "B01001_001", geometry = TRUE)
 
 ```
@@ -217,10 +217,10 @@ We're also going to pull down "shifted" geometry, because it will help us make b
 
 ```{r}
 
-county_geodata_shifted <- get_acs(geography = "county",
+county_geodata_shifted <- get_acs(geography = "county", key = census_api_key,
               variables = "B01001_001", geometry = TRUE, shift_geo = TRUE)
 
-state_geodata_shifted <- get_acs(geography = "state",
+state_geodata_shifted <- get_acs(geography = "state", key = census_api_key,
               variables = "B01001_001", geometry = TRUE, shift_geo = TRUE)
 
 ```
@@ -475,6 +475,8 @@ geo_pills_population_county_2009 <- county_geodata_shifted %>%
 ```{r}
 mapview(geo_pills_population_county_2009, zcol = 'estimate', legend = TRUE)
 
+# getting an error that goes "Error in mapview(geo_pills_population_county_2009, zcol = "estimate",  : 
+  #could not find function "mapview"
 ```
 
 **Task**: Make a static facet map, with one map per year between 2006 and 2012, *showing only Maryland counties*, colored based on the number of pills per person in each county in each year.  Provide a short writeup on what you find. What trends do you see?
@@ -482,6 +484,29 @@ mapview(geo_pills_population_county_2009, zcol = 'estimate', legend = TRUE)
 
 ```{r}
 # map code here
+md_counties <- pills_population %>%
+  filter(buyer_state == 'MD') %>%
+  group_by(countyfips, year) %>%
+  summarise(total_pills=sum(dosage_unit, na.rm = TRUE),
+            total_population=sum(population, na.rm=TRUE)) %>%
+  mutate(pills_per_person=total_pills/total_population)
+```
+
+```{r}
+md_counties <- county_geodata_shifted %>%
+ inner_join(md_counties, by=c("GEOID" = "countyfips"))
+```
+
+```{r}
+md_counties %>%
+  ggplot(aes(fill = pills_per_person)) +
+  facet_wrap(~year, nrow=2) +
+  geom_sf(lwd = 0) +
+  theme_map() +
+  labs(fill='Pills per Person', title="Per Capita opioid doses peaked in Maryland in the early 2010s", subtitle = "PEr capita does were highest in the western counties and in the northeastern counties, but lower in the larger, central couties, and in souther Maryland", caption = "Source: ARCOS database analysis and Census geographic data") +
+  theme(legend.position="bottom") +
+  scale_fill_viridis_c(option = "magma",labels = comma)
+
 
 ```
 
