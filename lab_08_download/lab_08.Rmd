@@ -69,7 +69,13 @@ We're loading five packages today.
 
 # Load Tidyverse, janitor and arcos, tidycensus, rvest
 # Use install.packages if necessary
+#install.packages('rvest')
 
+library('tidyverse')
+library('janitor')
+library('arcos')
+library('tidycensus')
+library('rvest')
 
 ```
 
@@ -113,7 +119,9 @@ Write the necessary code to download it directly from that URL and bring it into
 
 ```{r}
 
+avg_url <- 'https://raw.githubusercontent.com/smussenden/spring20-data-journalism/master/labs/lab_05/data/county_pills_per_year.csv'
 
+average_county_pills_per_year <- read_csv(avg_url)
 
 ```
 
@@ -208,7 +216,8 @@ Let's examine this table together.  Be sure to watch the video where I'll review
 ***Task***: using a similar method as we used above to create a table of county by county median household income estimates, create a table with the total estimated population of people who identify as white only and no other race in each state in 2014. The name of the label you'll need is:  Estimate!!Total!!White alone. 
 
 ```{r}
-
+county_white_only <- get_acs(geography = "county", 
+              variables="B02001_002", year=2014, geometry = FALSE )
 ```
 
 We're just scratching the surface of what you can do with tidycensus.  There are variables on economics, race, demographics and so much more.  
@@ -267,6 +276,10 @@ Okay, it's in now, but it's still kind of a mess. In next week's lab, which is d
 ***Task***: On this page, https://www.cdc.gov/drugoverdose/data/analysis.html, there's a table of national opioid death rates by year from 2000 to 2016.  To see it, click Data Table below the map.  Using the method above, scrape it in and store it as an object called opioid_states_scrape.  
 
 ```{r}
+opioid_death_scrape <- read_html('https://www.cdc.gov/drugoverdose/data/analysis.html')%>%
+  html_nodes('table') %>%
+  html_table(header=1, fill=TRUE) %>%
+    as.data.frame
 
 
 ```
