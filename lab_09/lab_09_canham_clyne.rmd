@@ -73,9 +73,8 @@ We're also going to load one new package: [corrr](https://github.com/tidymodels/
 **Task**: In the code block below, load the packages we'll need for today. 
 
 ```{r}
-
 # Load Tidyverse, janitor and arcos, tidycensus, scales and corrr
-install.packages('corrr')
+#install.packages('corrr')
 
 library(tidycensus)
 library(tidyverse)
